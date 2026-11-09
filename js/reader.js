@@ -79,7 +79,7 @@
 
   /* ---------- views ---------- */
   function setTitle(h) { $('.title', top).innerHTML = h; }
-  function showNav(on) { nav.style.visibility = on ? 'visible' : 'hidden'; }
+  function showNav(on) { nav.style.display = on ? '' : 'none'; }
   function mount(node, back) { stopRead(); pop.classList.remove('show'); stage.innerHTML = ''; if (back) node.classList.add('back'); stage.appendChild(node); stage.scrollTop = 0; }
 
   function showCover() {

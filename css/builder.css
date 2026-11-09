@@ -1,8 +1,11 @@
+/* Anjal Inaimathi for Tamil when installed on the device; otherwise the next font in each stack is used. */
+@font-face{font-family:'Anjal Inaimathi Tamil';src:local('Anjal Inaimathi'),local('AnjalInaimathi'),local('Anjal Inaimathi Regular'),local('AnjalInaimathi-Regular');font-weight:400;unicode-range:U+0B80-0BFF,U+200C-200D,U+25CC}
+@font-face{font-family:'Anjal Inaimathi Tamil';src:local('Anjal Inaimathi Bold'),local('AnjalInaimathi-Bold');font-weight:700;unicode-range:U+0B80-0BFF,U+200C-200D,U+25CC}
 /* Builder UI. Layout: header / sidebar (book + structure) / main editor */
 :root{
   --bg:#F2F4F3;--panel:#FFFFFF;--ink:#1D2725;--soft:#5E6B68;--line:#DCE2E0;--hover:#EAF0EE;
   --accent:#0F7B6C;--accent-ink:#fff;--accent-soft:#DDF1ED;--danger:#C2410C;
-  --ui:'Figtree',system-ui,sans-serif;--ta:'Noto Sans Tamil','Figtree',sans-serif;
+  --ui:'Figtree',system-ui,sans-serif;--ta:'Anjal Inaimathi Tamil','Noto Sans Tamil','Figtree',sans-serif;
   --r:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0}

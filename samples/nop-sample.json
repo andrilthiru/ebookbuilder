@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "type": "collection",
+  "theme": "journal",
+  "title_ta": "நானும் ஒரு படைப்பாளி",
+  "title_en": "I Am a Creator Too",
+  "subtitle": "மாதிரி மின்னூல் · Sample e-book",
+  "cover": "",
+  "sections": [
+    {
+      "id": "s1", "title_ta": "வளரும் எழுத்தாளர்கள்", "title_en": "Budding Writers", "intro": "",
+      "stories": [
+        {
+          "id": "st1", "kind": "story", "layout": "image", "title_ta": "சில்லறை", "title_en": "The Change", "author": "மாதிரி எழுத்தாளர்",
+          "thumb": "",
+          "pages": [
+            {"img": "", "audio": "", "ta": "மாலை நேரம். மீனா அருகிலுள்ள கடையில் பொருட்கள் வாங்கினாள்.", "en": "It was evening. Meena bought a few things at the shop nearby."},
+            {"img": "", "audio": "", "ta": "கடைக்காரர் தவறுதலாக அதிகச் சில்லறையைத் திருப்பிக் கொடுத்தார்.", "en": "The shopkeeper accidentally gave her too much change."},
+            {"img": "", "audio": "", "ta": "“யாருக்கும் தெரியாது” என்று மனதில் ஒரு குரல் சொன்னது. ஆனால் மீனா தயங்கினாள்.", "en": "“No one will know,” said a voice in her head. But Meena hesitated."},
+            {"img": "", "audio": "", "ta": "அவள் திரும்பிச் சென்று பணத்தைக் கொடுத்தாள். அவள் மனம் நிம்மதியானது.", "en": "She went back and returned the money. She felt at peace."}
+          ],
+          "glossary": {"சில்லறை": "change (money)", "கடைக்காரர்": "shopkeeper", "தவறுதலாக": "by mistake", "தயங்கினாள்": "hesitated", "நிம்மதி": "peace of mind"},
+          "activities": [
+            {"type": "mcq", "q_ta": "கடைக்காரர் என்ன தவறு செய்தார்?", "q_en": "What mistake did the shopkeeper make?", "options": ["பொருளை மறந்தார்", "அதிகச் சில்லறை கொடுத்தார்", "கடையை மூடினார்"], "answer": 1},
+            {"type": "match", "q_ta": "சொல்லையும் பொருளையும் பொருத்துக.", "q_en": "Match each word to its meaning.", "pairs": [["சில்லறை", "change (money)"], ["கடைக்காரர்", "shopkeeper"], ["தயங்கினாள்", "hesitated"], ["நிம்மதி", "peace of mind"]]},
+            {"type": "order", "q_ta": "கதை நிகழ்வுகளை வரிசைப்படுத்துக.", "q_en": "Put the events in order.", "items": ["மீனா கடையில் பொருட்கள் வாங்கினாள்.", "கடைக்காரர் அதிகச் சில்லறை கொடுத்தார்.", "மீனா தயங்கினாள்.", "மீனா பணத்தைத் திருப்பிக் கொடுத்தாள்."]},
+            {"type": "reflect", "q_ta": "நீங்கள் மீனாவின் இடத்தில் இருந்தால் என்ன செய்வீர்கள்? ஏன்?", "q_en": "What would you do in Meena's place? Why?"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s2", "title_ta": "வளரும் கலைஞர்கள்", "title_en": "Budding Artistes", "intro": "",
+      "stories": [
+        {
+          "id": "st2", "kind": "script", "layout": "image", "title_ta": "பகிர்வு", "title_en": "Sharing", "author": "மாதிரி எழுத்தாளர்", "thumb": "",
+          "pages": [
+            {"img": "", "audio": "", "ta": "(வகுப்பறை. இடைவேளை நேரம்.)\nகவின்: என் உணவுப் பெட்டியை வீட்டில் மறந்துவிட்டேன்.\nநிலா: கவலைப்படாதே. என் இட்லியைப் பகிர்ந்து சாப்பிடலாம்.\nகவின்: நன்றி, நிலா! நாளை நான் உனக்கு வடை கொண்டு வருவேன்.", "en": ""},
+            {"img": "", "audio": "", "ta": "(ஆசிரியர் உள்ளே வருகிறார்.)\nஆசிரியர்: என்ன இங்கே மகிழ்ச்சியான சத்தம்?\nநிலா: நாங்கள் உணவைப் பகிர்ந்துகொள்கிறோம், ஐயா.\nஆசிரியர்: பகிர்வதே உண்மையான நட்பு!", "en": ""}
+          ],
+          "glossary": {"இடைவேளை": "recess / break", "பகிர்ந்து": "sharing"},
+          "activities": [
+            {"type": "mcq", "q_ta": "கவின் எதை வீட்டில் மறந்தான்?", "q_en": "", "options": ["புத்தகம்", "உணவுப் பெட்டி", "பை"], "answer": 1}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s3", "title_ta": "வளரும் கவிஞர்கள்", "title_en": "Budding Poets", "intro": "",
+      "stories": [
+        {
+          "id": "st3", "kind": "poem", "layout": "image", "title_ta": "மழை", "title_en": "Rain", "author": "மாதிரி கவிஞர்", "thumb": "",
+          "pages": [
+            {"img": "", "audio": "", "ta": "கருமேகம் கூடியது வானில்,\nகுளிர்காற்று வீசியது தோப்பில்;\nசிறுதுளிகள் விழுந்தன மண்ணில்,\nமண்வாசம் நிறைந்தது ஊரில்.\n\nகுடை பிடித்து நடந்தோம் நாங்கள்,\nகப்பல் விட்டு மகிழ்ந்தோம் நாங்கள்;\nமழையே, நீ வருவாய் மீண்டும்,\nமனமெல்லாம் பூக்கும் என்றும்!", "en": ""}
+          ],
+          "glossary": {"கருமேகம்": "dark cloud", "மண்வாசம்": "smell of wet earth"},
+          "activities": [
+            {"type": "blank", "q_ta": "விடுபட்ட சொற்களை நிரப்புக.", "q_en": "Fill in the missing words.", "text": "சிறுதுளிகள் விழுந்தன [மண்ணில்],\n[மண்வாசம்] நிறைந்தது ஊரில்."}
+          ]
+        }
+      ]
+    }
+  ]
+}

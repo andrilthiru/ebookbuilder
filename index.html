@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ebook Builder · மின்னூல் உருவாக்கி</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/builder.css">
+</head>
+<body>
+<header class="hdr">
+  <div class="brand"><span class="logo">அ</span><div><b>Ebook Builder</b><small>மின்னூல் உருவாக்கி</small></div></div>
+  <div class="hdr-actions">
+    <span class="saved" id="saved">Saved</span>
+    <div class="menu">
+      <button class="btn ghost" id="fileBtn" aria-haspopup="true">File ▾</button>
+      <div class="menu-list" id="fileMenu" hidden>
+        <button data-cmd="new">New empty book</button>
+        <button data-cmd="sample">Load sample (NOP)</button>
+        <hr>
+        <button data-cmd="open">Open project file (.json)…</button>
+        <button data-cmd="save">Save project file (.json)</button>
+      </div>
+    </div>
+    <button class="btn ghost" data-cmd="preview">Preview</button>
+    <button class="btn primary" data-cmd="export">Export e-book</button>
+  </div>
+</header>
+<main class="layout">
+  <aside class="side" id="side"></aside>
+  <section class="main" id="main"></section>
+</main>
+
+<div class="modal" id="preview" hidden>
+  <div class="modal-bar">
+    <b>Preview</b>
+    <div class="seg" id="devices"><button data-w="100%" class="on">Desktop</button><button data-w="1024px">Tablet</button><button data-w="390px">Phone</button></div>
+    <button class="btn ghost" data-cmd="close-preview">Close</button>
+  </div>
+  <div class="frame-wrap"><iframe id="frame" title="E-book preview"></iframe></div>
+</div>
+
+<div class="modal small" id="exportDlg" hidden>
+  <div class="dlg">
+    <h2>Export e-book</h2>
+    <p>Downloads one HTML file with all pictures, audio and activities inside it. Open it in any browser, put it on a website, or upload it to your learning system.</p>
+    <p class="note" id="exportSize"></p>
+    <div class="row end"><button class="btn ghost" data-cmd="close-export">Cancel</button><button class="btn primary" data-cmd="do-export">Download HTML</button></div>
+  </div>
+</div>
+
+<input type="file" id="filePick" hidden>
+<script src="js/themes.js"></script>
+<script src="js/compose.js"></script>
+<script src="js/builder.js"></script>
+</body>
+</html>

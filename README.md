@@ -8,8 +8,9 @@ Build bilingual (Tamil + English) HTML5 e-books in the browser — single storie
 - **Book types:** one story, or a collection with sections (e.g. Budding Writers / Artistes / Poets) and a contents page.
 - **Content types:** story (paragraphs), script (`Name: line`, `(stage directions)`), poem (lines and stanzas).
 - **Layout:** picture panel on the left, text on the right (or text only). Stacks on phones.
-- **12 themes:** Kolam, Starry Night, Paper Cut, Watercolour Garden, Chalkboard, Rainy Day (all ages) · Toy Blocks, Jungle Safari, Under the Sea (under 10) · Sketch Journal, Comic Panels, Neon Night (teens 13+).
-- **Background animations:** bubbles, fireflies, leaves, petals, twinkling stars, sparkles, rain, snow, chalk dust, balloons, clouds — calm or lively. Turned off for readers who choose reduced motion.
+- **16 themes:** Tamil Collage, Singai Tamil, Kanchi Silk, Village Evening, Kolam (Tamil & Singapore) · Starry Night, Paper Cut, Watercolour Garden, Chalkboard, Rainy Day (all ages) · Toy Blocks, Jungle Safari, Under the Sea (under 10) · Sketch Journal, Comic Panels, Neon Night (teens 13+).
+- **Book language:** Tamil only (default — every button and message in Tamil) or Tamil + English with a language switch.
+- **Background animations:** bubbles, fireflies, leaves, petals, twinkling stars, sparkles, rain, snow, chalk dust, balloons, clouds, jasmine flowers, flying kites, birds — calm or lively. Turned off for readers who choose reduced motion.
 - **Reader tools:** Tamil/English switch, tap-a-word meanings, word bank, read-aloud (your MP3 or device voice), text size A-/A+, full screen, swipe and arrow keys.
 - **Activities after each story:** multiple choice, match pairs, put in order, fill in blanks, picture jigsaw, reflection.
 - **Saving:** autosaves in the browser. Use File → Save project file to back up or move to another computer.
@@ -26,6 +27,9 @@ Settings → Pages → Source: *Deploy from a branch* → Branch: `main`, folder
 - `js/ambient.js` — background animations
 - `js/compose.js` — builds exports (HTML, website zip, SCORM zips)
 - `samples/nop-sample.json` — sample collection
+
+## Artwork
+- Collage stickers (palm, jasmine, filter coffee, banana leaf, kite, letters, mango, pot, parai, coconut, HDB block, shophouse, orchid, kopi, prata, MRT, street sign) are original SVG drawings in `js/themes.js`.
 
 ## Third-party artwork
 - Kolam theme ornament: Pngtree item 15396985 "colorful deepavali kolam patterns", Premium licence (Personal Commercial) held by Andril Thirumaran. File: `assets/kolam-pngtree-15396985.webp` (also embedded in `js/themes.js`).

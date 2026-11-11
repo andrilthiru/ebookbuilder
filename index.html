@@ -23,6 +23,7 @@
         <button data-cmd="save">Save project file (.json)</button>
       </div>
     </div>
+    <button class="btn ghost" data-cmd="versions">Versions</button>
     <button class="btn ghost" data-cmd="preview">Preview</button>
     <button class="btn primary" data-cmd="export">Export e-book</button>
   </div>
@@ -39,6 +40,17 @@
     <button class="btn ghost" data-cmd="close-preview">Close</button>
   </div>
   <div class="frame-wrap"><iframe id="frame" title="E-book preview"></iframe></div>
+</div>
+
+<div class="modal small" id="versionsDlg" hidden>
+  <div class="dlg">
+    <h2>Versions</h2>
+    <p>Save a copy of the book as it is now, so you can come back to it later. Your work also saves automatically as you type.</p>
+    <div class="row"><input id="verName" class="ta" placeholder="Name this version, e.g. Draft 1 or Sent to MOE" style="flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px"><button class="btn primary" data-cmd="ver-save">Save version</button></div>
+    <div id="verList" class="ver-list"></div>
+    <p class="note">Versions are kept in this browser on this computer. To move work to another computer, use File → Save project file.</p>
+    <div class="row end"><button class="btn ghost" data-cmd="close-versions">Close</button></div>
+  </div>
 </div>
 
 <div class="modal small" id="exportDlg" hidden>

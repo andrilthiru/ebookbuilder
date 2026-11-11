@@ -13,7 +13,7 @@ Build bilingual (Tamil + English) HTML5 e-books in the browser — single storie
 - **Background animations:** bubbles, fireflies, leaves, petals, twinkling stars, sparkles, rain, snow, chalk dust, balloons, clouds, jasmine flowers, flying kites, birds — calm or lively. Turned off for readers who choose reduced motion.
 - **Reader tools:** Tamil/English switch, tap-a-word meanings, word bank, read-aloud (your MP3 or device voice), text size A-/A+, full screen, swipe and arrow keys.
 - **Activities after each story:** multiple choice, match pairs, put in order, fill in blanks, picture jigsaw, reflection.
-- **Saving:** autosaves in the browser. Use File → Save project file to back up or move to another computer.
+- **Saving:** autosaves in the browser as you type. **Versions** lets you save named copies (e.g. Draft 1) and open any of them later; opening one first keeps an automatic copy of your current work. Use File → Save project file to back up or move to another computer.
 - **Export:** SCORM 1.2 zip, SCORM 2004 zip, website zip, or a single HTML file.
 - **SCORM tracking:** completion (all pages viewed, or pages + activities), score from the auto-marked activities, optional pass mark, bookmark/resume, session time.
 

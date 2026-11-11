@@ -52,6 +52,60 @@
   const setLang = l => { document.body.classList.remove('l-ta', 'l-en', 'l-both'); document.body.classList.add('l-' + l); top.querySelectorAll('.lang button').forEach(b => b.classList.toggle('on', b.dataset.l === l)); };
   setLang(hasEn ? (C.defaultLang || 'both') : 'ta');
 
+  /* ---------- progress tracking (works with or without an LMS) ---------- */
+  const SC = window.SCORM || null;   // {version:'1.2'|'2004', rule:'pages'|'activities', pass:number|null}
+  const SCORABLE = ['mcq', 'match', 'order', 'jigsaw', 'blank'];
+  const prog$ = { v: {}, a: {}, loc: '' };
+  const totalScorable = B.sections.reduce((n, s) => n + s.stories.reduce((m, st) => m + (st.activities || []).filter(a => SCORABLE.includes(a.type)).length, 0), 0);
+  const LMS = (function () {
+    if (!SC) return null;
+    const find = w => { for (let i = 0; w && i < 12; i++) { const api = SC.version === '2004' ? w.API_1484_11 : w.API; if (api) return api; if (w.parent === w) break; w = w.parent; } return null; };
+    let api = find(window) || (window.opener && find(window.opener));
+    if (!api) return null;
+    const v4 = SC.version === '2004';
+    const call = (a, b, c) => { try { return v4 ? api[a.replace('LMS', '')](b, c) : api[a](b, c); } catch (e) { return ''; } };
+    const K = v4 ? { status: 'cmi.completion_status', success: 'cmi.success_status', loc: 'cmi.location', susp: 'cmi.suspend_data', raw: 'cmi.score.raw', min: 'cmi.score.min', max: 'cmi.score.max', scaled: 'cmi.score.scaled', time: 'cmi.session_time', exit: 'cmi.exit', entry: 'cmi.entry' }
+                 : { status: 'cmi.core.lesson_status', loc: 'cmi.core.lesson_location', susp: 'cmi.suspend_data', raw: 'cmi.core.score.raw', min: 'cmi.core.score.min', max: 'cmi.core.score.max', time: 'cmi.core.session_time', exit: 'cmi.core.exit', entry: 'cmi.core.entry' };
+    call('LMSInitialize', '');
+    const t0 = Date.now();
+    const o = { v4, K, get: k => call('LMSGetValue', k), set: (k, v) => call('LMSSetValue', k, String(v)), commit: () => call('LMSCommit', '') };
+    o.finish = () => { if (o.done) return; o.done = true; o.set(K.time, fmtTime((Date.now() - t0) / 1000)); o.set(K.exit, 'suspend'); o.commit(); call('LMSFinish', ''); };
+    function fmtTime(sec) { sec = Math.round(sec); if (v4) return 'PT' + Math.floor(sec / 3600) + 'H' + Math.floor(sec % 3600 / 60) + 'M' + (sec % 60) + 'S'; const p = n => String(n).padStart(2, '0'); return p(Math.floor(sec / 3600)) + ':' + p(Math.floor(sec % 3600 / 60)) + ':' + p(sec % 60); }
+    try { const d = JSON.parse(o.get(K.susp) || '{}'); Object.assign(prog$, { v: d.v || {}, a: d.a || {} }); } catch (e) {}
+    prog$.loc = o.get(K.loc) || '';
+    const st = o.get(K.status);
+    if (!st || st === 'not attempted' || st === 'unknown') o.set(K.status, 'incomplete');
+    addEventListener('pagehide', o.finish); addEventListener('beforeunload', o.finish);
+    return o;
+  })();
+  const keyOf = (si, i) => si + '.' + i;
+  function storyDone(si, i) {
+    const st = B.sections[si].stories[i], v = prog$.v[keyOf(si, i)] || '';
+    for (let k = 0; k < st.pages.length; k++) if (v[k] !== '1') return false;
+    if (SC && SC.rule === 'activities') for (let k = 0; k < (st.activities || []).length; k++) if (st.activities[k].type !== 'reflect' && !(keyOf(si, i) + '.' + k in prog$.a)) return false;
+    return true;
+  }
+  let syncT = 0;
+  function record() {
+    clearTimeout(syncT); syncT = setTimeout(sync, 300);
+  }
+  function sync() {
+    if (!LMS) return;
+    const K = LMS.K;
+    LMS.set(K.susp, JSON.stringify({ v: prog$.v, a: prog$.a }).slice(0, LMS.v4 ? 64000 : 4096));
+    LMS.set(K.loc, prog$.loc);
+    const right = Object.values(prog$.a).filter(x => x === 1).length;
+    const score = totalScorable ? Math.round(right / totalScorable * 100) : null;
+    if (score != null) { LMS.set(K.min, 0); LMS.set(K.max, 100); LMS.set(K.raw, score); if (LMS.v4) LMS.set(K.scaled, (score / 100).toFixed(2)); }
+    const complete = stories.every(x => storyDone(x.si, x.i));
+    const pass = SC.pass != null && SC.pass !== '' && score != null ? score >= +SC.pass : null;
+    if (LMS.v4) {
+      LMS.set(K.status, complete ? 'completed' : 'incomplete');
+      if (pass != null && complete) LMS.set(K.success, pass ? 'passed' : 'failed');
+    } else if (complete) LMS.set(K.status, pass == null ? 'completed' : pass ? 'passed' : 'failed');
+    LMS.commit();
+  }
+
   /* ---------- text helpers ---------- */
   let gl = {}, glKeys = [];
   const useGlossary = g => { gl = g || {}; glKeys = Object.keys(gl).sort((a, b) => b.length - a.length); };
@@ -88,7 +142,8 @@
     const n = el('section', 'page full cover');
     n.innerHTML = `<div><h1>${esc(B.title_ta)}</h1>${B.title_en ? `<h2>${esc(B.title_en)}</h2>` : ''}${art(B.cover, 'COVER')}
       ${B.subtitle ? `<div class="meta">${esc(B.subtitle)}</div>` : ''}
-      <button class="nav-btn big-btn" data-act="start">${esc(C.startLabel || 'தொடங்கு · Start')}</button></div>`;
+      <div class="end-actions"><button class="nav-btn big-btn" data-act="start">${esc(C.startLabel || 'தொடங்கு · Start')}</button>
+      ${prog$.loc ? `<button class="nav-btn big-btn" data-act="resume">${esc(C.resumeLabel || 'தொடர்க · Continue')}</button>` : ''}</div></div>`;
     mount(n); showNav(false); drawer.classList.remove('open'); updateProg(0);
   }
 
@@ -104,7 +159,7 @@
       <div class="cards">${s.stories.map((st, i) => {
         const th = st.thumb || st.pages.find(p => p.img)?.img;
         return `<button class="scard" data-open="${sec}:${i}"><div class="thumb">${th ? `<img src="${esc(th)}" alt="">` : `<span>${i + 1}</span>`}</div>
-        <div class="info"><span class="no">${String(i + 1).padStart(2, '0')} · ${esc((KIND[st.kind] || '').split(' · ')[1] || '')}</span><b>${esc(st.title_ta)}</b>${st.author ? `<small>${esc(st.author)}</small>` : ''}</div></button>`;
+        <div class="info"><span class="no">${String(i + 1).padStart(2, '0')} · ${esc((KIND[st.kind] || '').split(' · ')[1] || '')}${storyDone(sec, i) ? ' <span class="done-tick" title="Finished">✓</span>' : ''}</span><b>${esc(st.title_ta)}</b>${st.author ? `<small>${esc(st.author)}</small>` : ''}</div></button>`;
       }).join('')}</div>`;
     mount(n); showNav(false); updateProg(0);
   }
@@ -116,7 +171,7 @@
     setTitle(`${esc(st.title_ta)}${B.type === 'collection' ? ` <span class="sec">· ${esc(B.sections[si].title_ta)}</span>` : ''}`);
     slides = [
       ...st.pages.map((p, pi) => ({ type: 'page', p, pi })),
-      ...(st.activities || []).map(a => ({ type: 'act', a })),
+      ...(st.activities || []).map((a, k) => ({ type: 'act', a, k })),
       { type: 'end' }
     ];
     // bank
@@ -139,7 +194,7 @@
         ${renderText(st.kind, s.p.ta, 'ta')}${renderText(st.kind, s.p.en, 'en')}</div>
         ${s.p.audio || 'speechSynthesis' in window ? `<button class="read" data-act="read">${I.play}<span>${esc(C.readLabel || 'Listen')}</span></button>` : ''}</div>`;
     } else if (s.type === 'act') {
-      node = el('section', 'page full'); node.appendChild(renderActivity(s.a, st));
+      node = el('section', 'page full'); node.appendChild(renderActivity(s.a, st, keyOf(view.sec, view.i) + '.' + s.k));
     } else {
       node = el('section', 'page full cover');
       const nextS = nextStory();
@@ -152,6 +207,7 @@
         </div></div>`;
       if (C.stars && score.total) { const k = Math.max(1, Math.round(score.right / score.total * 3)); setTimeout(() => node.querySelectorAll('.stars svg').forEach((s, i) => setTimeout(() => s.classList.toggle('on', i < k), i * 300)), 200); if (k >= 2 && C.confetti) confetti(); }
     }
+    { const k = keyOf(view.sec, view.i); let v = (prog$.v[k] || '').padEnd(slides.length, '0').split(''); v[idx] = '1'; prog$.v[k] = v.join('').replace(/0+$/, ''); prog$.loc = k + '.' + idx; record(); }
     mount(node, back);
     [...$('.dots', nav).children].forEach((d, k) => d.classList.toggle('on', k === idx));
     $('.counter', nav).textContent = `${idx + 1} / ${slides.length}`;
@@ -165,13 +221,13 @@
   /* ---------- activities ---------- */
   const qBlock = a => `<p class="q"><span class="line-ta">${esc(a.q_ta || '')}</span>${a.q_en ? `<br><span class="line-en">${esc(a.q_en)}</span>` : ''}</p>`;
   const TITLES = { mcq: 'கேள்வி · Question', reflect: 'சிந்திப்போம் · Reflect', match: 'பொருத்துக · Match', order: 'வரிசைப்படுத்துக · Put in order', jigsaw: 'புதிர் · Puzzle', blank: 'நிரப்புக · Fill in the blanks' };
-  function renderActivity(a, st) {
+  function renderActivity(a, st, akey) {
     const box = el('div', 'act');
     box.innerHTML = `<h3>${esc(a.title || TITLES[a.type] || '')}</h3>${qBlock(a)}`;
     const fb = el('div', 'feedback');
     const right = () => { fb.textContent = C.rightMsg || 'சரி! · Correct!'; if (C.confetti) confetti(.4); };
     const wrong = () => { fb.textContent = C.wrongMsg || 'மீண்டும் முயலுங்கள் · Try again'; };
-    const tally = ok => { if (!box.dataset.scored) { box.dataset.scored = 1; score.total++; if (ok) score.right++; } };
+    const tally = ok => { if (!box.dataset.scored) { box.dataset.scored = 1; score.total++; if (ok) score.right++; if (!(akey in prog$.a)) { prog$.a[akey] = ok ? 1 : 0; record(); } } };
 
     if (a.type === 'mcq') {
       const o = el('div', 'opts'); let tried = false;
@@ -184,7 +240,7 @@
     }
     if (a.type === 'reflect') {
       const t = el('textarea'); t.placeholder = 'உங்கள் பதில்… / Your answer…'; t.setAttribute('aria-label', 'Your answer');
-      box.classList.add('reflect'); box.append(t);
+      box.classList.add('reflect'); t.oninput = () => { if (!(akey in prog$.a)) { prog$.a[akey] = -1; record(); } }; box.append(t);
     }
     if (a.type === 'match') {
       const pairs = (a.pairs || []).filter(p => p[0] && p[1]);
@@ -262,6 +318,7 @@
       if (act === 'next') go(idx + 1);
       if (act === 'prev') go(idx - 1);
       if (act === 'restart') go(0);
+      if (act === 'resume') { const [s0, i0, p0] = prog$.loc.split('.').map(Number); if (B.sections[s0]?.stories[i0]) openStory(s0, i0, p0 || 0); else showToc(); }
       if (act === 'nextstory') { const n = nextStory(); if (n) openStory(n.si, n.i); }
       if (act === 'read') read(a);
       if (act === 'bank') drawer.classList.toggle('open');
@@ -287,6 +344,7 @@
     let t = 0; (function f() { x.clearRect(0, 0, c.width, c.height); ps.forEach(p => { p.x += p.vx; p.y += p.vy; p.r += .1; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); x.restore(); }); if (++t < 160) requestAnimationFrame(f); else c.remove(); })();
   }
 
+  if (window.EBAmbient) EBAmbient.start(B.anim && B.anim !== 'theme' ? B.anim : (C.anim || 'none'), { density: B.animDensity, colors: B.anim && B.anim !== 'theme' ? null : C.animColors });
   /* start: optional window.START = {sec, i, page} for builder preview */
   const S = window.START;
   if (S && S.view === 'story') openStory(S.sec, S.i, S.page || 0);

@@ -88,8 +88,17 @@
       </div>
       <div class="stack">
         <h3 class="label">Theme</h3>
+        <span class="help">All ages</span><div class="themes">${themeGrid('all')}</div>
         <span class="help">Under 10</span><div class="themes">${themeGrid('kids')}</div>
         <span class="help">Teens 13+</span><div class="themes">${themeGrid('teens')}</div>
+      </div>
+      <div class="stack">
+        <h3 class="label">Background animation</h3>
+        <div class="anim-row">
+          <label class="field"><span>Effect</span><select id="animSel" data-path="anim" data-rerender>${(() => { const th = THEMES.find(x => x.id === book.theme) || THEMES[0]; const def = th.cfg.anim || 'none'; return `<option value="theme" ${!book.anim || book.anim === 'theme' ? 'selected' : ''}>Theme default (${esc(EBAmbient.LIST[def])})</option>` + Object.entries(EBAmbient.LIST).map(([k, v]) => `<option value="${k}" ${book.anim === k ? 'selected' : ''}>${esc(v)}</option>`).join(''); })()}</select></label>
+          <div class="seg" role="group" aria-label="Amount"><button data-dens="calm" class="${book.animDensity !== 'lively' ? 'on' : ''}">Calm</button><button data-dens="lively" class="${book.animDensity === 'lively' ? 'on' : ''}">Lively</button></div>
+        </div>
+        <p class="help">Animations pause for readers who turn on reduced motion in their device settings.</p>
       </div>
       <div class="stack">
         <h3 class="label">${t === 'single' ? 'Story' : 'Contents'} ${t === 'collection' ? `<button class="link" data-add-sec>+ Section</button>` : ''}</h3>
@@ -243,6 +252,7 @@
     if (d.sel) { const [s, i] = d.sel.split(':').map(Number); if (e.target.closest('.mini')) return; sel = { sec: s, st: i, page: 0, tab: sel.tab }; renderAll(); return; }
     if (d.type) { book.type = d.type; if (d.type === 'single') sel = { sec: 0, st: 0, page: 0, tab: sel.tab }; save(); renderAll(); return; }
     if (d.theme) { book.theme = d.theme; save(); renderSide(); return; }
+    if (d.dens) { book.animDensity = d.dens; save(); renderSide(); return; }
     if (d.tab) { sel.tab = d.tab; renderMain(); return; }
     if (d.page) { sel.page = +d.page; renderMain(); return; }
 
@@ -281,9 +291,22 @@
     const cmd = d.cmd;
     if (cmd === 'preview' || cmd === 'preview-here') openPreview(cmd === 'preview-here');
     if (cmd === 'close-preview') { $('#preview').hidden = true; $('#frame').srcdoc = ''; }
-    if (cmd === 'export') { const kb = new Blob([JSON.stringify(book)]).size / 1024; $('#exportSize').textContent = `Estimated size: ${kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : Math.round(kb + 60) + ' KB'}`; $('#exportDlg').hidden = false; }
+    if (cmd === 'export') { const kb = new Blob([JSON.stringify(book)]).size / 1024 * .78 + 90; $('#exportSize').textContent = `Estimated size: about ${kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : Math.round(kb) + ' KB'}`; syncExportOpts(); $('#exportDlg').hidden = false; }
     if (cmd === 'close-export') $('#exportDlg').hidden = true;
-    if (cmd === 'do-export') { const h = await EBCompose.html(book); download(new Blob([h], { type: 'text/html' }), slug() + '.html'); $('#exportDlg').hidden = true; }
+    if (cmd === 'do-export') {
+      const kind = document.querySelector('[name=fmt]:checked').value;
+      t.disabled = true; const old = t.textContent; t.textContent = 'Preparing…';
+      try {
+        if (kind === 'html') download(new Blob([await EBCompose.html(book)], { type: 'text/html' }), slug() + '.html');
+        else {
+          const pass = $('#pass').value.trim();
+          const blob = await EBCompose.zip(book, { kind, rule: $('#rule').value, pass: pass === '' ? null : Math.max(0, Math.min(100, +pass)) });
+          download(blob, slug() + (kind === 'web' ? '-web' : kind === 'scorm2004' ? '-scorm2004' : '-scorm12') + '.zip');
+        }
+        $('#exportDlg').hidden = true; toast('Download started');
+      } catch (err) { toast(err.message || 'Export failed'); }
+      t.disabled = false; t.textContent = old;
+    }
     if (cmd === 'save') download(new Blob([JSON.stringify(book, null, 1)], { type: 'application/json' }), slug() + '.ebook.json');
     if (cmd === 'open') { const f = await pick('.json,application/json'); if (f) { try { const b = JSON.parse(await f.text()); if (!b.sections) throw 0; book = b; sel = { sec: 0, st: 0, page: 0, tab: 'pages' }; save(); renderAll(); toast('Project opened'); } catch { toast('That file is not an Ebook Builder project.'); } } }
     if (cmd === 'new') { if (!confirmInline(t, 'Replace current book? Click again')) return; book = newBook(); sel = { sec: 0, st: 0, page: 0, tab: 'pages' }; save(); renderAll(); }
@@ -296,6 +319,8 @@
   document.addEventListener('drop', async e => { const z = e.target.closest('[data-img]'); if (!z) return; e.preventDefault(); const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) { setP(z.dataset.img, await loadImage(f)); save(); renderAll(); } });
   document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-sel],[data-img]')) { e.preventDefault(); e.target.click(); } if (e.key === 'Escape') { $('#preview').hidden = true; $('#exportDlg').hidden = true; } });
 
+  function syncExportOpts() { const k = document.querySelector('[name=fmt]:checked').value; $('#scormOpts').hidden = !k.startsWith('scorm'); }
+  document.addEventListener('change', e => { if (e.target.name === 'fmt') syncExportOpts(); });
   // preview
   async function openPreview(here) {
     const start = here ? { view: 'story', sec: book.type === 'collection' ? sel.sec : 0, i: book.type === 'collection' ? sel.st : 0, page: sel.tab === 'activities' ? story().pages.length : sel.page } : null;

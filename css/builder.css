@@ -153,3 +153,8 @@ h3.label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(
 .dlg{max-height:92vh;overflow:auto}
 .anim-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
 body.ta-only .en-field{display:none}
+.ver-list{display:grid;gap:6px;max-height:44vh;overflow:auto}
+.ver{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.ver div{flex:1;min-width:0}.ver b{display:block;font-family:var(--ta);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ver small{color:var(--soft)}
+.ver-empty{color:var(--soft);padding:10px 0}

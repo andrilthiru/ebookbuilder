@@ -25,12 +25,13 @@
   const DB = {
     open() { return new Promise((res, rej) => { const r = indexedDB.open('ebookbuilder', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
     async get(k) { const d = await this.open(); return new Promise(res => { const q = d.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(null); }); },
+    async del(k) { const d = await this.open(); return new Promise(res => { const t = d.transaction('kv', 'readwrite'); t.objectStore('kv').delete(k); t.oncomplete = res; t.onerror = res; }); },
     async set(k, v) { const d = await this.open(); return new Promise((res, rej) => { const t = d.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
   };
   let saveT;
   function save() {
     $('#saved').textContent = 'Saving…'; clearTimeout(saveT);
-    saveT = setTimeout(() => DB.set('book', book).then(() => $('#saved').textContent = 'Saved').catch(() => $('#saved').textContent = 'Not saved — storage full?'), 400);
+    saveT = setTimeout(() => DB.set('book', book).then(() => $('#saved').textContent = 'Saved ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })).catch(() => $('#saved').textContent = 'Not saved — storage full?'), 400);
   }
 
   /* ---------- model ---------- */
@@ -317,6 +318,11 @@
     }
     if (cmd === 'save') download(new Blob([JSON.stringify(book, null, 1)], { type: 'application/json' }), slug() + '.ebook.json');
     if (cmd === 'open') { const f = await pick('.json,application/json'); if (f) { try { const b = JSON.parse(await f.text()); if (!b.sections) throw 0; book = b; sel = { sec: 0, st: 0, page: 0, tab: 'pages' }; save(); renderAll(); toast('Project opened'); } catch { toast('That file is not an Ebook Builder project.'); } } }
+    if (cmd === 'versions') { $('#verName').value = ''; await renderVersions(); $('#versionsDlg').hidden = false; $('#verName').focus(); }
+    if (cmd === 'close-versions') $('#versionsDlg').hidden = true;
+    if (cmd === 'ver-save') { await saveVersion($('#verName').value.trim() || 'Version ' + new Date().toLocaleString()); $('#verName').value = ''; await renderVersions(); toast('Version saved'); }
+    if (d.verOpen) { if (!confirmInline(t, 'Replace current? Click again')) return; await saveVersion('Before opening another version (auto)'); const v = await DB.get('v:' + d.verOpen); if (v) { book = v; sel = { sec: 0, st: 0, page: 0, tab: 'pages' }; save(); renderAll(); $('#versionsDlg').hidden = true; toast('Version opened'); } }
+    if (d.verDel) { if (!confirmInline(t, 'Delete?')) return; const list = (await DB.get('versions')) || []; await DB.set('versions', list.filter(x => x.id !== d.verDel)); await DB.del('v:' + d.verDel); await renderVersions(); }
     if (cmd === 'new') { if (!confirmInline(t, 'Replace current book? Click again')) return; book = newBook(); sel = { sec: 0, st: 0, page: 0, tab: 'pages' }; save(); renderAll(); }
     if (cmd === 'sample') { if (!confirmInline(t, 'Replace current book? Click again')) return; book = await fetch('samples/nop-sample.json').then(r => r.json()); sel = { sec: 0, st: 0, page: 0, tab: 'pages' }; save(); renderAll(); }
   });
@@ -325,7 +331,7 @@
   document.addEventListener('dragover', e => { const z = e.target.closest('[data-img]'); if (z) { e.preventDefault(); z.classList.add('over'); } });
   document.addEventListener('dragleave', e => { const z = e.target.closest('[data-img]'); if (z) z.classList.remove('over'); });
   document.addEventListener('drop', async e => { const z = e.target.closest('[data-img]'); if (!z) return; e.preventDefault(); const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) { setP(z.dataset.img, await loadImage(f)); save(); renderAll(); } });
-  document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-sel],[data-img]')) { e.preventDefault(); e.target.click(); } if (e.key === 'Escape') { $('#preview').hidden = true; $('#exportDlg').hidden = true; } });
+  document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-sel],[data-img]')) { e.preventDefault(); e.target.click(); } if (e.key === 'Escape') { $('#preview').hidden = true; $('#exportDlg').hidden = true; $('#versionsDlg').hidden = true; } if (e.key === 'Enter' && e.target.id === 'verName') $('[data-cmd=ver-save]').click(); });
 
   function syncExportOpts() { const k = document.querySelector('[name=fmt]:checked').value; $('#scormOpts').hidden = !k.startsWith('scorm'); }
   document.addEventListener('change', e => { if (e.target.name === 'fmt') syncExportOpts(); });
@@ -336,6 +342,20 @@
     $('#preview').hidden = false;
   }
   $('#devices').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; $('#devices').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); $('#frame').style.width = b.dataset.w; });
+
+  // versions (named snapshots kept in this browser)
+  async function saveVersion(name) {
+    const id = Date.now().toString(36);
+    await DB.set('v:' + id, JSON.parse(JSON.stringify(book)));
+    const list = (await DB.get('versions')) || [];
+    list.unshift({ id, name, title: book.title_ta, at: Date.now() });
+    await DB.set('versions', list);
+  }
+  async function renderVersions() {
+    const list = (await DB.get('versions')) || [];
+    $('#verList').innerHTML = list.length ? list.map(v => `<div class="ver"><div><b>${esc(v.name)}</b><small>${esc(v.title || '')} · ${new Date(v.at).toLocaleString([], { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</small></div>
+      <button class="btn sm" data-ver-open="${v.id}">Open</button><button class="btn sm danger" data-ver-del="${v.id}">Delete</button></div>`).join('') : '<p class="ver-empty">No saved versions yet.</p>';
+  }
 
   // helpers
   function confirmInline(btn, msg) { if (btn.dataset.armed) { delete btn.dataset.armed; return true; } btn.dataset.armed = 1; const old = btn.innerHTML; btn.innerHTML = msg; setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.innerHTML = old; } }, 2500); return false; }

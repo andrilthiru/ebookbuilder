@@ -145,3 +145,10 @@ h3.label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(
 .page-ed>.stack,.grid2>*{min-width:0}
 .drop{width:100%}
 .stack{grid-template-columns:minmax(0,1fr)}
+.fmt{display:grid;gap:6px}
+.fmt label{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.fmt label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.fmt input{margin-top:3px;grid-row:span 2}
+.fmt small{color:var(--soft);line-height:1.4}
+.dlg{max-height:92vh;overflow:auto}
+.anim-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}

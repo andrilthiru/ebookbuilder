@@ -74,3 +74,5 @@ body{--fs:1}
 @media (max-width:760px){.match{gap:8px 10px}.match .opt{font-size:16px;padding:10px}.toc{padding:14px}}
 .text{justify-content:safe center}
 .page.full{place-items:safe center}
+.done-tick{color:var(--good);font-weight:800}
+.cover .art{max-height:30vh;width:auto;aspect-ratio:16/10}.cover h1{margin-top:4px}

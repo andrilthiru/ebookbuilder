@@ -77,9 +77,14 @@
       <div class="stack">
         <h3 class="label">Book</h3>
         <label class="field"><span>Title (Tamil)</span><input class="ta" data-path="title_ta" value="${esc(book.title_ta)}"></label>
-        <label class="field"><span>Title (English, optional)</span><input data-path="title_en" value="${esc(book.title_en)}"></label>
+        <label class="field en-field"><span>Title (English, optional)</span><input data-path="title_en" value="${esc(book.title_en)}"></label>
         <label class="field"><span>Subtitle / level</span><input class="ta" data-path="subtitle" value="${esc(book.subtitle)}"></label>
         <div class="field"><span>Cover picture</span>${drop('cover', book.cover, 'sm')}</div>
+      </div>
+      <div class="stack">
+        <h3 class="label">Book language</h3>
+        <div class="seg" role="group"><button data-lang="ta" class="${book.lang !== 'bi' ? 'on' : ''}">தமிழ் மட்டும்</button><button data-lang="bi" class="${book.lang === 'bi' ? 'on' : ''}">Tamil + English</button></div>
+        <p class="help">${book.lang !== 'bi' ? 'All buttons, titles and messages in the e-book are in Tamil. English fields are hidden here.' : 'Readers get a தமிழ் / EN switch, and buttons show both languages.'}</p>
       </div>
       <div class="stack">
         <h3 class="label">Book type</h3>
@@ -88,6 +93,7 @@
       </div>
       <div class="stack">
         <h3 class="label">Theme</h3>
+        <span class="help">Tamil &amp; Singapore</span><div class="themes">${themeGrid('tamil')}</div>
         <span class="help">All ages</span><div class="themes">${themeGrid('all')}</div>
         <span class="help">Under 10</span><div class="themes">${themeGrid('kids')}</div>
         <span class="help">Teens 13+</span><div class="themes">${themeGrid('teens')}</div>
@@ -132,7 +138,7 @@
       const s = book.sections[sel.secEdit], b = `sections.${sel.secEdit}`;
       m.innerHTML = `<div class="card stack"><div class="crumb">Section</div>
         <div class="grid2"><label class="field"><span>Section title (Tamil)</span><input class="ta" data-path="${b}.title_ta" value="${esc(s.title_ta)}"></label>
-        <label class="field"><span>Section title (English)</span><input data-path="${b}.title_en" value="${esc(s.title_en)}"></label></div>
+        <label class="field en-field"><span>Section title (English)</span><input data-path="${b}.title_en" value="${esc(s.title_en)}"></label></div>
         <label class="field"><span>Short introduction shown on the contents page (optional)</span><textarea class="ta" data-path="${b}.intro">${esc(s.intro)}</textarea></label></div>`;
       return;
     }
@@ -146,7 +152,7 @@
           <button class="btn" data-cmd="preview-here">Preview this</button></div>
         <div class="grid2">
           <label class="field"><span>Title (Tamil)</span><input class="ta" data-path="${b}.title_ta" data-live="h1" value="${esc(st.title_ta)}"></label>
-          <label class="field"><span>Title (English, optional)</span><input data-path="${b}.title_en" value="${esc(st.title_en)}"></label>
+          <label class="field en-field"><span>Title (English, optional)</span><input data-path="${b}.title_en" value="${esc(st.title_en)}"></label>
           <label class="field"><span>Author / credit</span><input class="ta" data-path="${b}.author" value="${esc(st.author)}"></label>
           <div class="grid2">
             <label class="field"><span>Type</span><select data-path="${b}.kind" data-rerender>${Object.entries(KINDS).map(([k, v]) => `<option value="${k}" ${st.kind === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
@@ -177,7 +183,7 @@
           <div class="stack">
             <span class="help"><b>Right panel · text</b> — ${help}</span>
             <label class="field"><span>Tamil text</span><textarea class="ta" rows="8" data-path="${pb}.ta" data-live="thumb">${esc(p.ta)}</textarea></label>
-            <label class="field"><span>English text (optional — readers get a language switch)</span><textarea rows="4" data-path="${pb}.en">${esc(p.en)}</textarea></label>
+            <label class="field en-field"><span>English text (optional — readers get a language switch)</span><textarea rows="4" data-path="${pb}.en">${esc(p.en)}</textarea></label>
             <div class="field"><span>Narration audio (optional — without it, the device voice reads aloud)</span>
               <div class="audio-row">${p.audio ? `<audio controls src="${p.audio}"></audio><button class="btn sm danger" data-audio-rm="${pb}">Remove</button>` : `<button class="btn sm" data-audio="${pb}">Add audio (MP3)</button>`}</div></div>
           </div>
@@ -195,7 +201,7 @@
   }
   function actCard(a, ab, i, n) {
     const q = `<div class="grid2"><label class="field"><span>Question / instruction (Tamil)</span><input class="ta" data-path="${ab}.q_ta" value="${esc(a.q_ta)}"></label>
-      <label class="field"><span>English (optional)</span><input data-path="${ab}.q_en" value="${esc(a.q_en)}"></label></div>`;
+      <label class="field en-field"><span>English (optional)</span><input data-path="${ab}.q_en" value="${esc(a.q_en)}"></label></div>`;
     let body = '';
     if (a.type === 'mcq') body = `<div class="field"><span>Options — tick the correct one</span><div class="list-ed">${a.options.map((o, k) => `<div class="li"><input type="radio" name="ans-${ab}" data-ans="${ab}" value="${k}" ${+a.answer === k ? 'checked' : ''} aria-label="Correct answer"><input data-path="${ab}.options.${k}" value="${esc(o)}" placeholder="Option ${k + 1}"><button class="mini" data-li-del="${ab}.options:${k}">${I.del}</button></div>`).join('')}</div><button class="link" data-li-add="${ab}.options">+ Option</button></div>`;
     if (a.type === 'match') body = `<div class="field"><span>Pairs (left ↔ right)</span><div class="list-ed">${a.pairs.map((p, k) => `<div class="li"><input data-path="${ab}.pairs.${k}.0" value="${esc(p[0])}" placeholder="Word"><input data-path="${ab}.pairs.${k}.1" value="${esc(p[1])}" placeholder="Meaning"><button class="mini" data-li-del="${ab}.pairs:${k}">${I.del}</button></div>`).join('')}</div><div class="row"><button class="link" data-li-add="${ab}.pairs">+ Pair</button><button class="link" data-from-gloss="${ab}">Fill from word meanings</button></div></div>`;
@@ -221,7 +227,7 @@
     story().glossary = g; save();
   }
 
-  function renderAll() { renderSide(); renderMain(); }
+  function renderAll() { document.body.classList.toggle('ta-only', book.lang !== 'bi'); renderSide(); renderMain(); }
 
   /* ---------- events ---------- */
   document.addEventListener('input', e => {
@@ -252,6 +258,7 @@
     if (d.sel) { const [s, i] = d.sel.split(':').map(Number); if (e.target.closest('.mini')) return; sel = { sec: s, st: i, page: 0, tab: sel.tab }; renderAll(); return; }
     if (d.type) { book.type = d.type; if (d.type === 'single') sel = { sec: 0, st: 0, page: 0, tab: sel.tab }; save(); renderAll(); return; }
     if (d.theme) { book.theme = d.theme; save(); renderSide(); return; }
+    if (d.lang) { book.lang = d.lang; save(); renderAll(); return; }
     if (d.dens) { book.animDensity = d.dens; save(); renderSide(); return; }
     if (d.tab) { sel.tab = d.tab; renderMain(); return; }
     if (d.page) { sel.page = +d.page; renderMain(); return; }

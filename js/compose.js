@@ -20,7 +20,7 @@ window.EBCompose = (function () {
 <title>${title.replace(/</g, '&lt;')}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=${theme.fonts}&family=Noto+Sans+Tamil:wght@400;600;700&display=swap" rel="stylesheet">
-<style>${themeCSS(theme)}\n${src.base}\n${src.extra}</style></head><body>
+<style>${src.base}\n${src.extra}\n${themeCSS(theme)}</style></head><body>
 <script>window.BOOK=${safeJSON(book)};window.THEME=${safeJSON(theme)};window.START=${safeJSON(start)};window.SCORM=${safeJSON(scorm)};</script>
 <script>${src.ambient.replace(/<\/script/gi, '<\\/script')}</script>
 <script>${src.reader.replace(/<\/script/gi, '<\\/script')}</script>

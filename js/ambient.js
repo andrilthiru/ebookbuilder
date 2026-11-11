@@ -13,13 +13,16 @@ window.EBAmbient = (function () {
     snow: 'Snowfall',
     dust: 'Chalk dust',
     balloons: 'Floating balloons',
-    clouds: 'Drifting clouds'
+    clouds: 'Drifting clouds',
+    jasmine: 'Jasmine flowers',
+    kites: 'Flying kites',
+    birds: 'Birds in flight'
   };
   const COLORS = {
     bubbles: ['rgba(255,255,255,.75)'], fireflies: ['#FFF3A0', '#C8FF9E'], leaves: ['#5DA34F', '#8BBE4A', '#E2A53A', '#C9692C'],
     petals: ['#F7B6C5', '#F2A0B4', '#FFD3DC'], stars: ['#FFFFFF', '#FFF3C4'], sparkles: ['#FFD86B', '#FFFFFF'],
     rain: ['rgba(255,255,255,.55)'], snow: ['#FFFFFF'], dust: ['rgba(255,255,255,.55)'],
-    balloons: ['#FF6B57', '#FFD23F', '#3EA6E8', '#7AC943', '#9B5DE5'], clouds: ['rgba(255,255,255,.85)']
+    balloons: ['#FF6B57', '#FFD23F', '#3EA6E8', '#7AC943', '#9B5DE5'], clouds: ['rgba(255,255,255,.85)'], jasmine: ['#FFFFFF'], kites: ['#E53935', '#FDD835', '#1E88E5', '#8E24AA', '#43A047'], birds: ['rgba(40,30,30,.55)']
   };
   let raf = 0, cvs = null, stopFn = null;
   const R = (a, b) => a + Math.random() * (b - a);
@@ -41,7 +44,7 @@ window.EBAmbient = (function () {
     const cols = (opt.colors && opt.colors.length) ? opt.colors : COLORS[type];
     const dens = opt.density === 'lively' ? 1.8 : 1;
     const area = Math.min(1.6, (W * H) / (1280 * 800));
-    const N = { bubbles: 22, fireflies: 26, leaves: 14, petals: 18, stars: 90, sparkles: 22, rain: 110, snow: 70, dust: 45, balloons: 7, clouds: 5 }[type];
+    const N = { bubbles: 22, fireflies: 26, leaves: 14, petals: 18, stars: 90, sparkles: 22, rain: 110, snow: 70, dust: 45, balloons: 7, clouds: 5, jasmine: 16, kites: 5, birds: 9 }[type];
     const n = Math.max(3, Math.round(N * dens * area));
     const make = (init) => {
       const p = { c: pickC(cols), x: R(0, W), y: init ? R(0, H) : 0, t: R(0, 1000), a: 1 };
@@ -54,6 +57,9 @@ window.EBAmbient = (function () {
         case 'rain': p.l = R(10, 22); p.vy = R(7, 12); p.y = init ? R(0, H) : -30; break;
         case 'snow': case 'dust': p.r = type === 'snow' ? R(1.2, 3.5) : R(.8, 2); p.vy = type === 'snow' ? R(.3, 1) : R(.05, .25); p.vx = R(-.2, .2); p.y = init ? R(0, H) : -10; break;
         case 'balloons': p.r = R(16, 26); p.vy = -R(.25, .55); p.y = init ? R(H * .3, H + 200) : H + 60; break;
+        case 'jasmine': p.r = R(5, 9); p.vy = R(.35, .8); p.rot = R(0, 6.28); p.vr = R(-.02, .02); p.sw = R(.5, 1.3); p.y = init ? R(-H, H) : -20; break;
+        case 'kites': p.r = R(16, 26); p.vx = R(.15, .4); p.y = R(H * .08, H * .55); p.x = init ? R(-60, W) : -80; p.ph = R(0, 6.28); break;
+        case 'birds': p.r = R(6, 11); p.vx = R(.5, 1.1); p.y = R(H * .05, H * .4); p.x = init ? R(-100, W) : -40; p.ph = R(0, 6.28); break;
         case 'clouds': p.r = R(40, 80); p.vx = R(.08, .25); p.y = R(20, H * .45); p.x = init ? R(-100, W) : -200; break;
       }
       return p;
@@ -90,6 +96,21 @@ window.EBAmbient = (function () {
             x.fillStyle = p.c; x.globalAlpha = .85; x.beginPath(); x.ellipse(p.x, p.y, p.r, p.r * 1.2, 0, 0, 6.28); x.fill(); x.globalAlpha = 1;
             x.fillStyle = 'rgba(255,255,255,.45)'; x.beginPath(); x.ellipse(p.x - p.r * .35, p.y - p.r * .4, p.r * .2, p.r * .32, -.5, 0, 6.28); x.fill();
             if (p.y < -p.r * 4) ps[i] = make(false); break;
+          case 'jasmine': p.y += p.vy; p.x += Math.sin(p.t / 34) * p.sw * .5; p.rot += p.vr;
+            x.save(); x.translate(p.x, p.y); x.rotate(p.rot); x.fillStyle = '#FFFFFF'; x.strokeStyle = 'rgba(180,170,140,.6)'; x.lineWidth = .8;
+            for (let k = 0; k < 5; k++) { x.rotate(1.2566); x.beginPath(); x.ellipse(0, -p.r * .7, p.r * .38, p.r * .7, 0, 0, 6.28); x.fill(); x.stroke(); }
+            x.fillStyle = '#F2C94C'; x.beginPath(); x.arc(0, 0, p.r * .22, 0, 6.28); x.fill(); x.restore();
+            if (p.y > H + 20) ps[i] = make(false); break;
+          case 'kites': { p.x += p.vx; const yy = p.y + Math.sin(p.t / 90 + p.ph) * 18, tilt = Math.sin(p.t / 70 + p.ph) * .25, r = p.r;
+            x.save(); x.translate(p.x, yy); x.rotate(tilt);
+            x.strokeStyle = 'rgba(80,60,40,.45)'; x.lineWidth = 1; x.beginPath(); x.moveTo(0, r * 1.3);
+            for (let k = 1; k <= 6; k++) x.lineTo(Math.sin(p.t / 20 + k) * 6, r * 1.3 + k * 9); x.stroke();
+            x.fillStyle = p.c; x.beginPath(); x.moveTo(0, -r); x.lineTo(r * .8, 0); x.lineTo(0, r * 1.3); x.lineTo(-r * .8, 0); x.closePath(); x.fill();
+            x.fillStyle = 'rgba(255,255,255,.35)'; x.beginPath(); x.moveTo(0, -r); x.lineTo(r * .8, 0); x.lineTo(0, 0); x.closePath(); x.fill();
+            x.restore(); if (p.x > W + 80) ps[i] = make(false); } break;
+          case 'birds': { p.x += p.vx; const f = Math.sin(p.t / 6 + p.ph) * p.r * .6, yy = p.y + Math.sin(p.t / 80 + p.ph) * 8;
+            x.strokeStyle = p.c; x.lineWidth = 1.8; x.lineCap = 'round'; x.beginPath(); x.moveTo(p.x - p.r, yy - f); x.quadraticCurveTo(p.x - p.r * .4, yy - p.r * .2, p.x, yy); x.quadraticCurveTo(p.x + p.r * .4, yy - p.r * .2, p.x + p.r, yy - f); x.stroke();
+            if (p.x > W + 40) ps[i] = make(false); } break;
           case 'clouds': p.x += p.vx; x.fillStyle = p.c; x.beginPath();
             x.arc(p.x, p.y, p.r * .6, 0, 6.28); x.arc(p.x + p.r * .55, p.y - p.r * .25, p.r * .7, 0, 6.28); x.arc(p.x + p.r * 1.15, p.y, p.r * .55, 0, 6.28); x.fill();
             if (p.x > W + 200) ps[i] = make(false); break;

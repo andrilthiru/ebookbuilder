@@ -18,9 +18,13 @@
     down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>',
     star: '<svg viewBox="0 0 24 24"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/></svg>'
   };
-  const KIND = { story: 'கதை · Story', script: 'நாடகம் · Script', poem: 'கவிதை · Poem' };
+  const TA = B.lang !== 'bi';   // Tamil-only interface unless the book is set to Tamil + English
+  const LT = { start: 'தொடங்கு', resume: 'தொடர்க', prev: 'முந்தைய', next: 'அடுத்து', read: 'கேள்', stop: 'நிறுத்து', toc: 'பொருளடக்கம்', bank: 'சொல் வங்கி', again: 'மீண்டும் படி', nextStory: 'அடுத்த கதை', end: 'முற்றும்', right: 'சரி!', wrong: 'மீண்டும் முயல்க', check: 'சரிபார்', answer: 'உங்கள் பதில்…', page: 'பக்கம்', cover: 'அட்டைப்படம்', noPic: 'இந்தப் புதிருக்கு ஒரு படம் சேர்க்கவும்.' };
+  const LB = { start: C.startLabel || 'தொடங்கு · Start', resume: C.resumeLabel || 'தொடர்க · Continue', prev: C.prevLabel || 'Back', next: C.nextLabel || 'Next', read: C.readLabel || 'Listen', stop: C.stopLabel || 'Stop', toc: C.tocTitle || 'பொருளடக்கம் · Contents', bank: C.bankTitle || 'சொல் வங்கி · Word bank', again: C.againLabel || 'மீண்டும் · Read again', nextStory: 'அடுத்தது · Next', end: C.endTa || 'முற்றும்', right: C.rightMsg || 'சரி! · Correct!', wrong: C.wrongMsg || 'மீண்டும் முயலுங்கள் · Try again', check: 'சரிபார் · Check', answer: 'உங்கள் பதில்… / Your answer…', page: 'PAGE', cover: 'COVER', noPic: 'Add a picture to this puzzle.' };
+  const L = k => (TA ? LT : LB)[k];
+  const KIND = TA ? { story: 'கதை', script: 'நாடகம்', poem: 'கவிதை' } : { story: 'கதை · Story', script: 'நாடகம் · Script', poem: 'கவிதை · Poem' };
   const isKids = T.age === 'kids';
-  const hasEn = B.sections.some(s => s.stories.some(st => st.pages.some(p => (p.en || '').trim())));
+  const hasEn = !TA && B.sections.some(s => s.stories.some(st => st.pages.some(p => (p.en || '').trim())));
   const stories = B.sections.flatMap((s, si) => s.stories.map((st, i) => ({ st, si, i })));
 
   /* ---------- shell ---------- */
@@ -42,7 +46,7 @@
   const prog = el('div', 'progress', '<i></i>'); if (C.progressBar) book.appendChild(prog);
   const stage = el('div', 'pages'); book.appendChild(stage);
   const nav = el('div', 'navbar');
-  nav.innerHTML = `<button class="nav-btn" data-act="prev">${I.prev}<span>${esc(C.prevLabel || 'Back')}</span></button><div class="dots"></div><span class="counter"></span><button class="nav-btn" data-act="next"><span>${esc(C.nextLabel || 'Next')}</span>${I.next}</button>`;
+  nav.innerHTML = `<button class="nav-btn" data-act="prev">${I.prev}<span>${esc(L('prev'))}</span></button><div class="dots"></div><span class="counter"></span><button class="nav-btn" data-act="next"><span>${esc(L('next'))}</span>${I.next}</button>`;
   book.appendChild(nav);
   const drawer = el('aside', 'drawer'); book.appendChild(drawer);
   const pop = el('div', 'pop'); document.body.appendChild(pop);
@@ -138,12 +142,12 @@
 
   function showCover() {
     view = { name: 'cover' }; useGlossary({});
-    setTitle(esc(B.title_ta) + (B.title_en ? ` <span class="sec">· ${esc(B.title_en)}</span>` : ''));
+    setTitle(esc(B.title_ta) + (!TA && B.title_en ? ` <span class="sec">· ${esc(B.title_en)}</span>` : ''));
     const n = el('section', 'page full cover');
-    n.innerHTML = `<div><h1>${esc(B.title_ta)}</h1>${B.title_en ? `<h2>${esc(B.title_en)}</h2>` : ''}${art(B.cover, 'COVER')}
+    n.innerHTML = `<div><h1>${esc(B.title_ta)}</h1>${!TA && B.title_en ? `<h2>${esc(B.title_en)}</h2>` : ''}${art(B.cover, L('cover'))}
       ${B.subtitle ? `<div class="meta">${esc(B.subtitle)}</div>` : ''}
-      <div class="end-actions"><button class="nav-btn big-btn" data-act="start">${esc(C.startLabel || 'தொடங்கு · Start')}</button>
-      ${prog$.loc ? `<button class="nav-btn big-btn" data-act="resume">${esc(C.resumeLabel || 'தொடர்க · Continue')}</button>` : ''}</div></div>`;
+      <div class="end-actions"><button class="nav-btn big-btn" data-act="start">${esc(L('start'))}</button>
+      ${prog$.loc ? `<button class="nav-btn big-btn" data-act="resume">${esc(L('resume'))}</button>` : ''}</div></div>`;
     mount(n); showNav(false); drawer.classList.remove('open'); updateProg(0);
   }
 
@@ -153,13 +157,13 @@
     setTitle(esc(B.title_ta));
     const s = B.sections[sec];
     const n = el('section', 'toc');
-    n.innerHTML = `<h1>${esc(C.tocTitle || 'பொருளடக்கம் · Contents')}</h1>
-      ${B.sections.length > 1 ? `<div class="tabs" role="tablist">${B.sections.map((x, i) => `<button role="tab" class="${i === sec ? 'on' : ''}" data-sec="${i}">${esc(x.title_ta)}${x.title_en ? `<small>${esc(x.title_en)}</small>` : ''}</button>`).join('')}</div>` : ''}
+    n.innerHTML = `<h1>${esc(L('toc'))}</h1>
+      ${B.sections.length > 1 ? `<div class="tabs" role="tablist">${B.sections.map((x, i) => `<button role="tab" class="${i === sec ? 'on' : ''}" data-sec="${i}">${esc(x.title_ta)}${!TA && x.title_en ? `<small>${esc(x.title_en)}</small>` : ''}</button>`).join('')}</div>` : ''}
       ${s.intro ? `<p class="sec-intro">${esc(s.intro)}</p>` : ''}
       <div class="cards">${s.stories.map((st, i) => {
         const th = st.thumb || st.pages.find(p => p.img)?.img;
         return `<button class="scard" data-open="${sec}:${i}"><div class="thumb">${th ? `<img src="${esc(th)}" alt="">` : `<span>${i + 1}</span>`}</div>
-        <div class="info"><span class="no">${String(i + 1).padStart(2, '0')} · ${esc((KIND[st.kind] || '').split(' · ')[1] || '')}${storyDone(sec, i) ? ' <span class="done-tick" title="Finished">✓</span>' : ''}</span><b>${esc(st.title_ta)}</b>${st.author ? `<small>${esc(st.author)}</small>` : ''}</div></button>`;
+        <div class="info"><span class="no">${String(i + 1).padStart(2, '0')} · ${esc(TA ? KIND[st.kind] : ((KIND[st.kind] || '').split(' · ')[1] || ''))}${storyDone(sec, i) ? ' <span class="done-tick" title="Finished">✓</span>' : ''}</span><b>${esc(st.title_ta)}</b>${st.author ? `<small>${esc(st.author)}</small>` : ''}</div></button>`;
       }).join('')}</div>`;
     mount(n); showNav(false); updateProg(0);
   }
@@ -175,7 +179,7 @@
       { type: 'end' }
     ];
     // bank
-    drawer.innerHTML = `<h3>${esc(C.bankTitle || 'சொல் வங்கி · Word bank')}<button class="icon-btn" data-act="bank">✕</button></h3><dl>${Object.keys(gl).sort().map(k => `<div><dt>${esc(k)}</dt><dd>${esc(gl[k])}</dd></div>`).join('') || '<dd>—</dd>'}</dl>`;
+    drawer.innerHTML = `<h3>${esc(L('bank'))}<button class="icon-btn" data-act="bank">✕</button></h3><dl>${Object.keys(gl).sort().map(k => `<div><dt>${esc(k)}</dt><dd>${esc(gl[k])}</dd></div>`).join('') || '<dd>—</dd>'}</dl>`;
     const dots = $('.dots', nav); dots.innerHTML = '';
     if (slides.length <= 14) slides.forEach((_, k) => { const b = el('button'); b.setAttribute('aria-label', 'Page ' + (k + 1)); b.onclick = () => go(k); dots.appendChild(b); });
     showNav(true); go(at);
@@ -189,21 +193,21 @@
     if (s.type === 'page') {
       const showArt = st.layout !== 'text';
       node = el('section', `page story kind-${st.kind}${showArt ? '' : ' noimg'}`);
-      node.innerHTML = `${showArt ? art(s.p.img, 'PAGE ' + (s.pi + 1)) : ''}
+      node.innerHTML = `${showArt ? art(s.p.img, L('page') + ' ' + (s.pi + 1)) : ''}
         <div class="text"><div class="textbox">${s.pi === 0 ? `<p class="line-ta" style="font-family:var(--font-head);color:var(--head-ink)">${esc(st.title_ta)}</p>${st.author ? `<p class="line-en" style="display:block">${esc(st.author)}</p>` : ''}` : ''}
         ${renderText(st.kind, s.p.ta, 'ta')}${renderText(st.kind, s.p.en, 'en')}</div>
-        ${s.p.audio || 'speechSynthesis' in window ? `<button class="read" data-act="read">${I.play}<span>${esc(C.readLabel || 'Listen')}</span></button>` : ''}</div>`;
+        ${s.p.audio || 'speechSynthesis' in window ? `<button class="read" data-act="read">${I.play}<span>${esc(L('read'))}</span></button>` : ''}</div>`;
     } else if (s.type === 'act') {
       node = el('section', 'page full'); node.appendChild(renderActivity(s.a, st, keyOf(view.sec, view.i) + '.' + s.k));
     } else {
       node = el('section', 'page full cover');
       const nextS = nextStory();
-      node.innerHTML = `<div><h1>${esc(C.endTa || 'முற்றும்')}</h1><h2>${esc(st.title_ta)}</h2>
+      node.innerHTML = `<div><h1>${esc(L('end'))}</h1><h2>${esc(st.title_ta)}</h2>
         ${C.stars && score.total ? `<div class="stars">${I.star.repeat(3)}</div>` : ''}
         <div class="end-actions">
-          <button class="nav-btn" data-act="restart">${esc(C.againLabel || 'மீண்டும் · Read again')}</button>
-          ${B.type === 'collection' ? `<button class="nav-btn" data-act="toc">${esc('பொருளடக்கம் · Contents')}</button>` : ''}
-          ${nextS ? `<button class="nav-btn" data-act="nextstory">அடுத்தது · Next ${I.next}</button>` : ''}
+          <button class="nav-btn" data-act="restart">${esc(L('again'))}</button>
+          ${B.type === 'collection' ? `<button class="nav-btn" data-act="toc">${esc(TA ? LT.toc : 'பொருளடக்கம் · Contents')}</button>` : ''}
+          ${nextS ? `<button class="nav-btn" data-act="nextstory">${esc(L('nextStory'))} ${I.next}</button>` : ''}
         </div></div>`;
       if (C.stars && score.total) { const k = Math.max(1, Math.round(score.right / score.total * 3)); setTimeout(() => node.querySelectorAll('.stars svg').forEach((s, i) => setTimeout(() => s.classList.toggle('on', i < k), i * 300)), 200); if (k >= 2 && C.confetti) confetti(); }
     }
@@ -219,14 +223,14 @@
   function updateProg(f) { const i = $('i', prog); if (i) i.style.width = (f * 100) + '%'; }
 
   /* ---------- activities ---------- */
-  const qBlock = a => `<p class="q"><span class="line-ta">${esc(a.q_ta || '')}</span>${a.q_en ? `<br><span class="line-en">${esc(a.q_en)}</span>` : ''}</p>`;
-  const TITLES = { mcq: 'கேள்வி · Question', reflect: 'சிந்திப்போம் · Reflect', match: 'பொருத்துக · Match', order: 'வரிசைப்படுத்துக · Put in order', jigsaw: 'புதிர் · Puzzle', blank: 'நிரப்புக · Fill in the blanks' };
+  const qBlock = a => `<p class="q"><span class="line-ta">${esc(a.q_ta || '')}</span>${!TA && a.q_en ? `<br><span class="line-en">${esc(a.q_en)}</span>` : ''}</p>`;
+  const TITLES = TA ? { mcq: 'கேள்வி', reflect: 'சிந்திப்போம்', match: 'பொருத்துக', order: 'வரிசைப்படுத்துக', jigsaw: 'படப் புதிர்', blank: 'கோடிட்ட இடங்களை நிரப்புக' } : { mcq: 'கேள்வி · Question', reflect: 'சிந்திப்போம் · Reflect', match: 'பொருத்துக · Match', order: 'வரிசைப்படுத்துக · Put in order', jigsaw: 'புதிர் · Puzzle', blank: 'நிரப்புக · Fill in the blanks' };
   function renderActivity(a, st, akey) {
     const box = el('div', 'act');
     box.innerHTML = `<h3>${esc(a.title || TITLES[a.type] || '')}</h3>${qBlock(a)}`;
     const fb = el('div', 'feedback');
-    const right = () => { fb.textContent = C.rightMsg || 'சரி! · Correct!'; if (C.confetti) confetti(.4); };
-    const wrong = () => { fb.textContent = C.wrongMsg || 'மீண்டும் முயலுங்கள் · Try again'; };
+    const right = () => { fb.textContent = L('right'); if (C.confetti) confetti(.4); };
+    const wrong = () => { fb.textContent = L('wrong'); };
     const tally = ok => { if (!box.dataset.scored) { box.dataset.scored = 1; score.total++; if (ok) score.right++; if (!(akey in prog$.a)) { prog$.a[akey] = ok ? 1 : 0; record(); } } };
 
     if (a.type === 'mcq') {
@@ -239,7 +243,7 @@
       box.append(o, fb);
     }
     if (a.type === 'reflect') {
-      const t = el('textarea'); t.placeholder = 'உங்கள் பதில்… / Your answer…'; t.setAttribute('aria-label', 'Your answer');
+      const t = el('textarea'); t.placeholder = L('answer'); t.setAttribute('aria-label', 'Your answer');
       box.classList.add('reflect'); t.oninput = () => { if (!(akey in prog$.a)) { prog$.a[akey] = -1; record(); } }; box.append(t);
     }
     if (a.type === 'match') {
@@ -258,13 +262,13 @@
       const ul = el('ol', 'order');
       const draw = () => { ul.innerHTML = cur.map((k, p) => `<li data-p="${p}"><span>${esc(items[k])}</span><button class="icon-btn" data-mv="-1" aria-label="Move up">${I.up}</button><button class="icon-btn" data-mv="1" aria-label="Move down">${I.down}</button></li>`).join(''); };
       ul.onclick = e => { const b = e.target.closest('[data-mv]'); if (!b) return; const p = +b.closest('li').dataset.p, q = p + +b.dataset.mv; if (q < 0 || q >= cur.length) return; [cur[p], cur[q]] = [cur[q], cur[p]]; draw(); };
-      const chk = el('button', 'nav-btn check', 'சரிபார் · Check');
+      const chk = el('button', 'nav-btn check', L('check'));
       chk.onclick = () => { const ok = cur.every((k, p) => k === p); ul.querySelectorAll('li').forEach((li, p) => li.classList.add(cur[p] === p ? 'ok' : 'no')); setTimeout(() => ul.querySelectorAll('li').forEach(li => li.classList.remove('ok', 'no')), 1500); tally(ok); ok ? right() : wrong(); };
       draw(); box.append(ul, chk, fb);
     }
     if (a.type === 'jigsaw') {
       const n = Math.max(2, Math.min(5, +a.size || 3)), img = a.img || st.pages.find(p => p.img)?.img;
-      if (!img) { box.append(el('p', 'q', 'Add a picture to this puzzle.')); return box; }
+      if (!img) { box.append(el('p', 'q', L('noPic'))); return box; }
       const g = el('div', 'jig'); g.style.gridTemplateColumns = `repeat(${n},1fr)`;
       let cur = shuffled([...Array(n * n).keys()]), sel = null;
       const draw = () => { g.innerHTML = ''; cur.forEach((k, p) => { const b = el('button'); b.setAttribute('aria-label', 'Tile ' + (p + 1));
@@ -280,7 +284,7 @@
       const html = esc(a.text || '').replace(/\[([^\]]+)\]/g, (_, w) => { answers.push(w.trim()); return `<input data-k="${answers.length - 1}" aria-label="Blank ${answers.length}">`; });
       const p = el('div', 'blank-text', html.replace(/\n/g, '<br>'));
       if (a.showBank !== false) box.append(el('div', 'bank-chips', shuffled(answers).map(w => `<span>${esc(w)}</span>`).join('')));
-      const chk = el('button', 'nav-btn check', 'சரிபார் · Check');
+      const chk = el('button', 'nav-btn check', L('check'));
       chk.onclick = () => { let ok = true; p.querySelectorAll('input').forEach(i => { const g = i.value.trim() === answers[i.dataset.k]; i.classList.toggle('ok', g); i.classList.toggle('no', !g); ok = ok && g; }); tally(ok); ok ? right() : wrong(); };
       box.append(p, chk, fb);
     }
@@ -289,10 +293,10 @@
 
   /* ---------- read aloud ---------- */
   let audio = null, reading = null;
-  function stopRead() { if (audio) { audio.pause(); audio = null; } if (window.speechSynthesis) speechSynthesis.cancel(); document.querySelectorAll('.w.hl').forEach(w => w.classList.remove('hl')); if (reading) { reading.innerHTML = `${I.play}<span>${esc(C.readLabel || 'Listen')}</span>`; reading = null; } }
+  function stopRead() { if (audio) { audio.pause(); audio = null; } if (window.speechSynthesis) speechSynthesis.cancel(); document.querySelectorAll('.w.hl').forEach(w => w.classList.remove('hl')); if (reading) { reading.innerHTML = `${I.play}<span>${esc(L('read'))}</span>`; reading = null; } }
   function read(btn) {
     if (reading === btn) return stopRead();
-    stopRead(); reading = btn; btn.innerHTML = `${I.stop}<span>${esc(C.stopLabel || 'Stop')}</span>`;
+    stopRead(); reading = btn; btn.innerHTML = `${I.stop}<span>${esc(L('stop'))}</span>`;
     const p = slides[idx].p, lang = document.body.classList.contains('l-en') ? 'en' : 'ta';
     const src = lang === 'en' ? p.audio_en : p.audio;
     if (src) { audio = new Audio(src); audio.onended = stopRead; audio.play().catch(stopRead); return; }

@@ -44,14 +44,27 @@
 <div class="modal small" id="exportDlg" hidden>
   <div class="dlg">
     <h2>Export e-book</h2>
-    <p>Downloads one HTML file with all pictures, audio and activities inside it. Open it in any browser, put it on a website, or upload it to your learning system.</p>
+    <div class="field"><span>Format</span>
+      <div class="fmt" role="radiogroup">
+        <label><input type="radio" name="fmt" value="scorm12" checked><b>SCORM 1.2 (.zip)</b><small>For Moodle and most learning systems. Tracks completion, score and where the student stopped.</small></label>
+        <label><input type="radio" name="fmt" value="scorm2004"><b>SCORM 2004 (.zip)</b><small>For learning systems that ask for SCORM 2004.</small></label>
+        <label><input type="radio" name="fmt" value="web"><b>Website (.zip)</b><small>index.html plus a media folder. Upload to any web host.</small></label>
+        <label><input type="radio" name="fmt" value="html"><b>Single HTML file</b><small>Everything in one file. Easy to email or open offline.</small></label>
+      </div>
+    </div>
+    <div class="grid2" id="scormOpts">
+      <label class="field"><span>Mark as complete when</span><select id="rule"><option value="pages">every page is viewed</option><option value="activities">every page is viewed and every activity is tried</option></select></label>
+      <label class="field"><span>Pass mark % (optional)</span><input id="pass" type="number" min="0" max="100" placeholder="e.g. 60"></label>
+    </div>
     <p class="note" id="exportSize"></p>
-    <div class="row end"><button class="btn ghost" data-cmd="close-export">Cancel</button><button class="btn primary" data-cmd="do-export">Download HTML</button></div>
+    <div class="row end"><button class="btn ghost" data-cmd="close-export">Cancel</button><button class="btn primary" data-cmd="do-export">Download</button></div>
   </div>
 </div>
 
 <input type="file" id="filePick" hidden>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="js/themes.js"></script>
+<script src="js/ambient.js"></script>
 <script src="js/compose.js"></script>
 <script src="js/builder.js"></script>
 </body>

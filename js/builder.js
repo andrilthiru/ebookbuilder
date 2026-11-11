@@ -94,6 +94,7 @@
       <div class="stack">
         <h3 class="label">Theme</h3>
         <span class="help">Tamil &amp; Singapore</span><div class="themes">${themeGrid('tamil')}</div>
+        <span class="help">Festive &amp; wedding</span><div class="themes">${themeGrid('festive')}</div>
         <span class="help">All ages</span><div class="themes">${themeGrid('all')}</div>
         <span class="help">Under 10</span><div class="themes">${themeGrid('kids')}</div>
         <span class="help">Teens 13+</span><div class="themes">${themeGrid('teens')}</div>

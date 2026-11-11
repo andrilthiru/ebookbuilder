@@ -152,3 +152,4 @@ h3.label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(
 .fmt small{color:var(--soft);line-height:1.4}
 .dlg{max-height:92vh;overflow:auto}
 .anim-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
+body.ta-only .en-field{display:none}
